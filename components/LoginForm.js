@@ -21,6 +21,7 @@ const LoginForm = () => {
   };
 
   return (
+    <div className={styles.loginBody}>
     <div className={styles.loginContainer}>
       <h2 className={styles.header}>Login to your account</h2>
       {errorMessage && <p className={styles.error}>{errorMessage}</p>}
@@ -44,6 +45,7 @@ const LoginForm = () => {
       <p className={styles.forgotPassword}>
         <a href="/forgot-password">Forgot Password?</a>
       </p>
+    </div>
     </div>
   );
 };
