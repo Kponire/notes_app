@@ -2,20 +2,48 @@
 import { TextInput, PasswordInput, Button } from '@mantine/core';
 import { useState } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import styles from '../styles/LoginForm.module.css';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const router = useRouter();
 
   const handleLogin = async () => {
-    await axios.post('/api/auth/login', { email, password });
+    try {
+      await axios.post('/api/auth/login', { email, password });
+      router.push('/notes'); // Redirect to the notes page on successful login
+    } catch (error) {
+      setErrorMessage('Invalid email or password. Please try again.');
+    }
   };
 
   return (
-    <div>
-      <TextInput label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <PasswordInput label="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-      <Button color="teal" onClick={handleLogin}>Login</Button>
+    <div className={styles.loginContainer}>
+      <h2 className={styles.header}>Login to your account</h2>
+      {errorMessage && <p className={styles.error}>{errorMessage}</p>}
+      <TextInput
+        label="Email"
+        placeholder="Your email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className={styles.input}
+      />
+      <PasswordInput
+        label="Password"
+        placeholder="Your password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        className={styles.input}
+      />
+      <Button color="teal" fullWidth onClick={handleLogin} className={styles.button}>
+        Login
+      </Button>
+      <p className={styles.forgotPassword}>
+        <a href="/forgot-password">Forgot Password?</a>
+      </p>
     </div>
   );
 };
