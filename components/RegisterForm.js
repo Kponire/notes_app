@@ -12,13 +12,14 @@ const RegisterForm = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleRegister = async () => {
+    console.log(username, email, password);
     if (password !== confirmPassword) {
       setErrorMessage("Passwords don't match");
       return;
     }
 
     try {
-      await axios.post('/api/auth/register', { username, email, password });
+      await axios.post('http://localhost:5000/api/auth/register', { username, email, password });
       // Redirect user or show success message
     } catch (error) {
       setErrorMessage('Registration failed. Please try again.');

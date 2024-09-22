@@ -13,7 +13,9 @@ const LoginForm = () => {
 
   const handleLogin = async () => {
     try {
-      await axios.post('/api/auth/login', { email, password });
+      const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      console.log(response.data);
+      localStorage.setItem('token', response.data.token);
       router.push('/notes'); // Redirect to the notes page on successful login
     } catch (error) {
       setErrorMessage('Invalid email or password. Please try again.');
