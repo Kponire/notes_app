@@ -1,0 +1,47 @@
+.noteListContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.noteCard {
+  width: 320px;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.noteCard:hover {
+  transform: translateY(-5px);
+}
+
+.noteCard h2 {
+  font-size: 1.25rem;
+}
+
+.noteCard p {
+  color: #555;
+  line-height: 1.6;
+}
+
+.noteCard .mantine-Text {
+  margin-bottom: 0.5rem;
+}
+
+.noteCard .mantine-Badge {
+  background-color: #ececec;
+  color: #333;
+}
+
+.noteCard .mantine-ActionIcon {
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.noteCard .mantine-ActionIcon:hover {
+  color: #007bff;
+}

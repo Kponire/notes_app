@@ -1,0 +1,34 @@
+.noNotesContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4rem;
+    text-align: center;
+  }
+  
+  .noNotesText {
+    font-size: 1.2rem;
+    color: #888;
+    margin-top: 1rem;
+  }
+  
+  .noNotesIcon {
+    width: 100px;
+    height: 100px;
+    color: #ccc;
+  }
+  
+  @media (max-width: 768px) {
+    .noNotesContainer {
+      margin-top: 2rem;
+    }
+    .noNotesText {
+      font-size: 1rem;
+    }
+    .noNotesIcon {
+      width: 80px;
+      height: 80px;
+    }
+  }
+  

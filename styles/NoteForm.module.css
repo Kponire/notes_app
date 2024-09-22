@@ -1,0 +1,20 @@
+.formContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  
+  .input {
+    margin-bottom: 0.3rem;
+  }
+  
+  .editor {
+    height: 200px;
+    background-color: blue;
+    color: white;
+  }
+  
+  .submitButton {
+    margin-top: 1rem;
+  }
+  
