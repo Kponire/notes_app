@@ -1,0 +1,153 @@
+.containerBody {
+    width: 100%;
+}
+/* .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+} */
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 2rem;
+    background-color: #2f3e4d;
+    color: white;
+  }
+  
+  .logo {
+    font-size: 1.75rem;
+    font-weight: bold;
+    /*color: #ffcc80;*/
+    color: teal;
+  }
+  
+  .navLinks {
+    display: flex;
+    gap: 1.5rem;
+  }
+  
+  .navLink {
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .navLink:hover {
+    color: #ffcc80;
+  }
+  
+  .heroSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5rem 2rem;
+    background: linear-gradient(135deg, #f7f9fc 30%, #e3f2fd 100%);
+    border-radius: 10px;
+  }
+  
+  .heroText {
+    max-width: 600px;
+  }
+  
+  .heroTitle {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: #2f3e4d;
+  }
+  
+  .heroSubtitle {
+    font-size: 1.5rem;
+    color: #607d8b;
+    margin-bottom: 2rem;
+  }
+  
+  .heroButton {
+    margin-top: 1.5rem;
+    background-color: teal;
+  }
+  
+  .imageWrapper {
+    flex: 1;
+    text-align: right;
+    margin-left: 50px;
+  }
+  
+  .featuresSection {
+    padding: 6rem 0;
+    background-color: #fff;
+  }
+  
+  .featuresGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    margin-top: 2rem;
+  }
+  
+  .featureCard {
+    /*background-color: #f0f4c3;*/
+    background-color: teal;
+    color: white;
+    padding: 2.5rem;
+    border-radius: 12px;
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+  
+  .featureCard:hover {
+    transform: translateY(-10px);
+  }
+  
+  .featureIcon {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    color: #8bc34a;
+  }
+  
+  .featureTitle {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: white;
+  }
+  
+  .featureDescription {
+    /*color: #607d8b;*/
+    color: white;
+  }
+  
+  .callToAction {
+    padding: 4rem 0;
+    text-align: center;
+    background-color: teal;
+  }
+  
+  .callToActionText {
+    font-size: 2.5rem;
+    font-weight: 800;
+    /*color: #37474f;*/
+    color: white;
+    margin-bottom: 2rem;
+  }
+  
+  .callToActionButton {
+    margin-top: 2rem;
+  }
+  
+  .footer {
+    padding: 2rem 0;
+    text-align: center;
+    background-color: #2f3e4d;
+    color: white;
+  }
+  
+  .footerText {
+    font-size: 1rem;
+    color: #cfd8dc;
+  }
+  

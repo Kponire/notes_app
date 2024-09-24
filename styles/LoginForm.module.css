@@ -15,12 +15,17 @@
   .header {
     text-align: center;
     font-size: 1.8rem;
-    color: #333;
+    color: teal;
     margin-bottom: 1rem;
   }
   
   .input {
     margin-bottom: 1rem;
+    border: 1.5px solid teal;
+  }
+
+  .inputLabel{
+    color: teal;
   }
   
   .button {
@@ -45,5 +50,13 @@
   
   .forgotPassword a:hover {
     text-decoration: underline;
+  }
+
+  .registerLink {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 5px;
+    text-align: center;    
   }
   

@@ -1,21 +1,35 @@
 .notesContainer {
-    margin-top: 2rem;
+    /* margin-top: 2rem; */
+    max-height: 100vh;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 2rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .box {
+    width: calc(100vw - 240px) !important;
+    margin-block: 15px;
+    margin-right: 2rem;
   }
   
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .headerRight {
+    display: flex;
+    gap: 5px;
   }
   
   .title {
     font-size: 2rem;
     font-weight: 600;
-    color: #333;
+    color: teal;
   }
   
   .loader {

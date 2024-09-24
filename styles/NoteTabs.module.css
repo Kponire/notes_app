@@ -1,3 +1,10 @@
+.tab {
+  &[data-active] {
+    z-index: 1;
+    border-bottom-color: teal;
+    color: teal;
+  }
+}
 .tabsContainer {
     margin-top: 2rem;
     display: flex;
