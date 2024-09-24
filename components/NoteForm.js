@@ -1,5 +1,5 @@
 "use client"
-import { TextInput, Button, ColorInput, Textarea, TagsInput } from '@mantine/core';
+import { TextInput, Button, ColorInput, Textarea, TagsInput, Select } from '@mantine/core';
 import { RichTextEditor } from '@mantine/tiptap';
 import { useEditor } from '@tiptap/react';
 import Highlight from '@tiptap/extension-highlight';
@@ -12,11 +12,12 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect, useState } from 'react';
 import styles from '../styles/NoteForm.module.css';
 
-const NoteForm = ({ note, onSubmit }) => {
+const NoteForm = ({ note, onSubmit, categories, text }) => {
   const [title, setTitle] = useState(note?.title || '');
   const [content, setContent] = useState(note?.content || '');
+  const [category, setCategory] = useState(note?.category_id || 0);
   const [tags, setTags] = useState(Array.isArray(note?.tags) ? note?.tags : note?.tags?.split(',') || []);
-  const [color, setColor] = useState(note?.color || '#cc2121');
+  const [color, setColor] = useState(note?.color || '#ffffff');
 
   const editor = useEditor({
     extensions: [
@@ -40,7 +41,9 @@ const NoteForm = ({ note, onSubmit }) => {
   }, [content]);
 
   const handleSubmit = async () => {
-    const noteData = { title, content, tags, color };
+    console.log(category);
+    const noteData = { title, content, tags, color, category };
+    console.log(noteData);
     await onSubmit(noteData);
   };
 
@@ -59,6 +62,13 @@ const NoteForm = ({ note, onSubmit }) => {
         onChange={setTags}
         placeholder="Enter tags"
         className={styles.input}
+      />
+      <Select
+        label="Category"
+        placeholder="Select category"
+        data={categories?.map((cat) => ({ value: String(cat.id), label: cat.name }))}
+        value={category}
+        onChange={setCategory}
       />
       <ColorInput
         label="Background Color"
@@ -115,7 +125,7 @@ const NoteForm = ({ note, onSubmit }) => {
         <RichTextEditor.Content />
       </RichTextEditor>
       <Button onClick={handleSubmit} color="teal" fullWidth className={styles.submitButton}>
-        Add Note
+        {text}
       </Button>
     </div>
   );
