@@ -146,9 +146,14 @@ exports.setArchiveNote = async (req, res) => {
 // Set a reminder for a note
 exports.setReminder = async (req, res) => {
   const { is_reminder_set } = req.body;
+  console.log(req.params.id, is_reminder_set, req.user.id);
   try {
     const result = await Note.setReminder(req.params.id, req.user.id, is_reminder_set);
-    res.json({ message: 'Reminder set successfully' });
+    if (result) {
+      res.json({ message: 'Reminder set successfully' });
+    } else {
+      res.status(404).json({ message: 'Note not found or reminder not updated' });
+    }
   } catch (error) {
     console.error('Error setting reminder:', error);
     res.status(500).json({ message: 'Failed to set reminder' });
