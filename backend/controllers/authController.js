@@ -52,9 +52,10 @@ exports.forgotPassword = async (req, res) => {
 
   await User.setResetToken(user.id, resetToken, resetTokenExpires);
 
-  const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
+  //const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
+  const resetUrl = `${req.protocol}://localhost:3000/reset-password/${resetToken}`;
   console.log(resetUrl);
-  //await sendResetEmail(user.email, resetUrl);
+  await sendResetEmail(user.email, resetUrl);
 
   res.json({ message: 'Password reset link sent to your email' });
 };
