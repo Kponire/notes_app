@@ -204,19 +204,31 @@ class Note {
     });
   }
 
-   //update reminderStatus
-   static setReminder(noteId, userId, reminderDate) {
+  //update reminderStatus
+  static setReminder(noteId, userId, reminderDate) {
     return new Promise((resolve, reject) => {
+      const formattedReminderDate = new Date(reminderDate).toISOString().slice(0, 19).replace('T', ' ');
       connectDB.query(
         'UPDATE notes SET reminder = ? WHERE id = ? AND user_id = ?',
-        [reminderDate, noteId, userId],
+        [formattedReminderDate, noteId, userId],
         (err, result) => {
-          if (err) reject(err);
+          if (err) {
+            console.error('Database error:', err);
+            return reject(err);
+          }
+
+          if (!result) {
+            console.error('Query result is undefined');
+            return resolve(false);
+          }
+
+          console.log('Update result:', result);
           resolve(result.affectedRows > 0);
         }
       );
     });
   }
+
 
   //update trashStatus
   static setTrashStatus(noteId, userId, isTrash) {
