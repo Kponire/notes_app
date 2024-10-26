@@ -258,6 +258,59 @@ class Note {
       );
     });
   }
+
+  // Get all reminders due (past reminders)
+  static getDueReminders() {
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT * 
+        FROM notes 
+        WHERE reminder IS NOT NULL AND reminder <= NOW()
+      `;
+
+      connectDB.query(query, [], (err, results) => {
+        if (err) {
+          console.error('Database error:', err);
+          return reject(err);
+        }
+        resolve(results);
+      });
+    });
+  }
+
+  // Clear the reminder after sending the email
+  static clearReminder(noteId, userId) {
+    return new Promise((resolve, reject) => {
+      const query = `
+        UPDATE notes 
+        SET reminder = NULL 
+        WHERE id = ? AND user_id = ?
+      `;
+      connectDB.query(query, [noteId, userId], (err, result) => {
+        if (err) {
+          console.error('Database error:', err);
+          return reject(err);
+        }
+        resolve(result.affectedRows > 0);
+      });
+    });
+  }
+
+  // Example: Fetch user by ID (assuming you have a users table)
+  static getUserById(userId) {
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT email FROM users WHERE id = ?
+      `;
+      connectDB.query(query, [userId], (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(result[0]);
+      });
+    });
+  }
+
 }
 
 module.exports = Note;
