@@ -413,11 +413,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Screenshots and Demos
 
-![Dashboard Screenshot](https://via.placeholder.com/1024x768?text=Dashboard)
+![Dashboard Screenshot](https://drive.google.com/file/d/1lDBZhXlf4ujMwSqgeu_WOad90A26f7na/view?usp=sharing)
 *Main dashboard of the NoteMaster application.*
 
-![Editor Screenshot](https://via.placeholder.com/1024x768?text=Editor)
+![Editor Screenshot](https://drive.google.com/file/d/1i_NLxw8EWtF6gXxQrUamj7W4_FlOUy-1/view?usp=sharing)
 *Rich Text Editor with formatting options.*
-
-![Mobile View](https://via.placeholder.com/500x800?text=Mobile+View)
-*Mobile-friendly design.*
