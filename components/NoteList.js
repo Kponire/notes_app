@@ -1,7 +1,8 @@
 "use client";
-import { Card, Text, Badge, Group, ActionIcon, Modal, Tooltip, Box, Divider } from '@mantine/core';
+import { Card, Text, Badge, Group, ActionIcon, Modal, Tooltip, Box, Divider, Menu, rem } from '@mantine/core';
 import { FiEdit, FiTrash } from 'react-icons/fi';
-import { FaBell, FaArchive, FaThumbtack } from 'react-icons/fa'; // Icons for Reminder, Archive, and Pin
+import { FaBell, FaArchive, FaThumbtack, FaTrashRestore } from 'react-icons/fa'; 
+import { MdDelete } from "react-icons/md";
 import { useState } from 'react';
 import styles from '../styles/NoteList.module.css';
 import NoteForm from './NoteForm';
@@ -22,11 +23,10 @@ const NoteList = ({ notes, onEdit, onDelete, onPin, onArchive, onReminder, categ
   };
 
   const handleDeleteClick = async (note) => {
-    // If the note is already in trash (is_deleted is true), hard delete it
     if (note.trash) {
       await onDelete(note.id, true); // Pass true to indicate permanent delete
     } else {
-      await onDelete(note.id, false); // Soft delete (move to trash)
+      await onDelete(note.id, false, true); // Soft delete (move to trash)
     }
   };
 
@@ -63,9 +63,31 @@ const NoteList = ({ notes, onEdit, onDelete, onPin, onArchive, onReminder, categ
               <ActionIcon color="teal" onClick={() => handleEditClick(note)}>
                 <FiEdit />
               </ActionIcon>
-              <ActionIcon color="red" onClick={() => handleDeleteClick(note)}>
-                <FiTrash />
-              </ActionIcon>
+              {
+                note.trash ? (
+                  <Menu shadow="md" width={200}>
+                    <Menu.Target>
+                    <ActionIcon color="red">
+                      <FiTrash />
+                    </ActionIcon>
+                    </Menu.Target>
+
+                    <Menu.Dropdown>
+                      <Menu.Item fw={'bold'} c={'teal'} onClick={() =>  onDelete(note.id, false, false)} leftSection={<FaTrashRestore style={{ width: rem(14), height: rem(14) }} />}>
+                        Restore
+                      </Menu.Item>
+                      <Menu.Item fw={'bold'} c={'red'} onClick={() =>  onDelete(note.id, true)} leftSection={<MdDelete style={{ width: rem(14), height: rem(14) }} />}>
+                        Delete
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+
+                ) : (
+                  <ActionIcon color="red" onClick={() => handleDeleteClick(note)}>
+                    <FiTrash />
+                  </ActionIcon>
+                )
+              }
             </Box>
           </Box>
           <Divider my={'15px'} />
@@ -100,7 +122,7 @@ const NoteList = ({ notes, onEdit, onDelete, onPin, onArchive, onReminder, categ
               note.reminder, 
               FaBell, 
               FaBell, 
-              () => onReminder(note.id, !note.reminder), 
+              () => onReminder(note.id), 
               note.reminder ? 'Remove Reminder' : 'Set Reminder'
             )}
             </Box>
