@@ -10,6 +10,7 @@ import styles from '@/styles/Notes.module.css';
 import axios from 'axios';
 import Sidebar from '@/components/Sidebar';
 import CategoryList from '@/components/CategoryList';
+import { DateTimePicker } from '@mantine/dates';
 
 const NotesPage = () => {
   const [notes, setNotes] = useState([]);
@@ -22,6 +23,9 @@ const NotesPage = () => {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [update, setUpdate] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isReminderOpened, setIsReminderOpened] = useState(false);
+  const [reminderDateVal, setReminderDateVal] = useState(new Date());
+  const [idRem, setIdRem] = useState(null);
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -49,7 +53,7 @@ const NotesPage = () => {
       const response = await axios.get(`http://localhost:5000/api${endpoint}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      //console.log("response is", response.data);
+      console.log(response.data);
       filterNotes(response.data);
       setLoading(false);
       //setFilteredNotes(response.data);
@@ -82,14 +86,21 @@ const NotesPage = () => {
   // Filtering notes based on category and pinned status
   const filterNotes = (notesData) => {
     let filtered = notesData;
+    console.log(notesData);
     if (activeCategory === 'Reminders') {
-      filtered = notesData.filter(note => note.reminder === 1);
+      filtered = notesData.filter(note => {
+        const reminderDate = new Date(note.reminder);
+        return reminderDate >= new Date();
+      });
     } else if (activeCategory === 'Archive') {
       filtered = notesData.filter(note => note.archived === 1);
     } else if (activeCategory === 'Trash') {
       filtered = notesData.filter(note => note.trash === 1);
     } else if (activeCategory === 'Notes') {
-      filtered = notesData.filter(note => note.trash === 0 && note.archived === 0);
+      filtered = notesData.filter(note => {
+        const reminderDate = new Date(note.reminder); 
+        return note.trash === 0 && note.archived === 0 && reminderDate <= new Date();
+      });
     }
     filtered = filtered.sort((a, b) => b.pinned - a.pinned);
     //console.log(activeCategory, filtered);
@@ -106,6 +117,7 @@ const NotesPage = () => {
     });
     setModalOpen(false);
     fetchCategories();
+    setUpdate(!update);
   };
 
   // Add a new note
@@ -117,6 +129,7 @@ const NotesPage = () => {
       },
     });
     setNotes([...notes, response.data]);
+    setUpdate(!update);
   };
 
   // Edit an existing note
@@ -132,7 +145,7 @@ const NotesPage = () => {
   };
 
   // Delete a note
-  const handleDeleteNote = async (id, isPermanentDelete) => {
+  const handleDeleteNote = async (id, isPermanentDelete, restore) => {
     const token = localStorage.getItem('token');
     if (isPermanentDelete) {      
       await axios.delete(`http://localhost:5000/api/notes/${id}`, {
@@ -143,12 +156,12 @@ const NotesPage = () => {
       setNotes(notes.filter((note) => note.id !== id));
       setUpdate(!update);
     } else {
-      await axios.put(`http://localhost:5000/api/trash/${id}`, { is_trash: true }, {
+      await axios.put(`http://localhost:5000/api/trash/${id}`, { is_trash: restore }, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      setNotes(notes.map((note) => (note.id === id ? { ...note, trash: true } : note)));
+      setNotes(notes.map((note) => (note.id === id ? { ...note, trash: restore } : note)));
       setUpdate(!update);
     }
   };
@@ -178,14 +191,21 @@ const NotesPage = () => {
     setUpdate(!update);
   };
 
+  const handleReminderVal = (id) => {
+    setIsReminderOpened(true);
+    setIdRem(id);
+  }
+
   // Set or unset reminder for a note
-  const handleReminderNote = async (id, isReminderSet) => {
+  const handleReminderNote = async () => {
     const token = localStorage.getItem('token');
-    await axios.put(`http://localhost:5000/api/reminders/${id}`, { is_reminder_set: isReminderSet }, {
+    const id = idRem;
+    await axios.put(`http://localhost:5000/api/reminders/${id}`, { is_reminder_set: reminderDateVal }, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+    setIsReminderOpened(false);
     setNotes(notes.map((note) => (note.id === id ? { ...note, is_reminder_set: isReminderSet } : note)));
   };
 
@@ -239,15 +259,32 @@ const NotesPage = () => {
         {loading ? (
           <Loader className={styles.loader} />
         ) : filteredNotes.length > 0 ? (
-          <NoteList 
-            notes={filteredNotes} 
-            onEdit={handleEditNote} 
-            onDelete={handleDeleteNote}
-            onPin={handlePinNote}
-            onArchive={handleArchiveNote} 
-            onReminder={handleReminderNote}
-            categories={categories}
-          />
+          <>
+            <NoteList 
+              notes={filteredNotes} 
+              onEdit={handleEditNote} 
+              onDelete={handleDeleteNote}
+              onPin={handlePinNote}
+              onArchive={handleArchiveNote} 
+              onReminder={handleReminderVal}
+              categories={categories}
+            />
+            <Modal opened={isReminderOpened} onClose={() => setIsReminderOpened(false)} title="Authentication">
+              <DateTimePicker
+                clearable
+                minDate={new Date()}
+                defaultValue={new Date()}
+                value={reminderDateVal}
+                onChange={setReminderDateVal}
+                valueFormat="DD MMM YYYY hh:mm A"
+                label="Pick date and time"
+                placeholder="Pick date and time"
+              />
+              <Button bg={'teal'} my={'md'} onClick={handleReminderNote} fullWidth>
+                Set Reminder
+              </Button>
+            </Modal>
+          </>
         ) : (
           <NoNotesImage />
         )}
