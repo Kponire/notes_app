@@ -50,4 +50,39 @@ const sendResetEmail = async (to, resetUrl) => {
   await transporter.sendMail(mailOptions);
 };
 
-module.exports = { sendResetEmail };
+const sendReminderEmail = async (to, noteTitle, content) => {
+  const transporter = nodemailer.createTransport({
+    host: 'sandbox.smtp.mailtrap.io',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: `"NoteMaster" <${process.env.EMAIL_USER}>`,
+    to,
+    subject: `Reminder: ${noteTitle} - NoteMaster`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #333;">
+        <div style="background-color: #f4f4f4; padding: 20px; border-radius: 10px;">
+          <h1 style="color: teal; text-align: center; font-size: 28px;">NoteMaster Reminder</h1>
+          <p style="color: #555; font-size: 16px; line-height: 1.6; text-align: center;">
+            You have a reminder for your note: <strong>${noteTitle}</strong>.
+          </p>
+          ${content}
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+          <p style="color: #777; font-size: 12px; text-align: center;">
+            &copy; ${new Date().getFullYear()} NoteMaster. All rights reserved.
+          </p>
+        </div>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+module.exports = { sendResetEmail, sendReminderEmail };
