@@ -144,24 +144,17 @@ Before setting up **NoteMaster**, ensure you have the following software install
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/notemaster.git
-   cd notemaster
+   git clone https://github.com/Kponire/notes_app.git
+   cd notes_app
    ```
 
-2. **Frontend Installation**:
-   Navigate to the frontend folder and install dependencies:
+2. **Frontend & Backend Installation**:
+   Inside the notes_app folder, install dependencies:
    ```bash
    npm install
    ```
 
-3. **Backend Installation**:
-   Navigate to the backend folder and install dependencies:
-   ```bash
-   cd /backend
-   npm install
-   ```
-
-4. **MySQL Setup**:
+3. **MySQL Setup**:
    Set up a MySQL database using the provided SQL schema or manually create one with the following structure:
    ```sql
    CREATE DATABASE notesapp;
@@ -170,7 +163,7 @@ Before setting up **NoteMaster**, ensure you have the following software install
 
 ### Environment Variables
 
-In the `backend` folder, create a `.env` file with the following variables:
+In the `notes_app` folder, create a `.env` file with the following variables:
 
 ```bash
 # Server Configuration
@@ -194,17 +187,22 @@ SMTP_PASS=your_email_password
 
 1. **Start the Backend**:
    ```bash
-   cd backend
-   npm start
+   npm run backend-dev
    ```
 
 2. **Start the Frontend**:
-   Open another terminal and navigate to the `frontend` folder:
+   Open another terminal and navigate to the `note_app` folder:
    ```bash
    npm run dev
    ```
 
-3. **Access the Application**:
+3. **Start both the Frontend and Backend**:
+   Open another terminal and navigate to the `note_app` folder:
+   ```bash
+   npm run start-all
+   ```   
+
+4. **Access the Application**:
    Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
@@ -250,11 +248,12 @@ Key frontend components include:
 
 ### Authentication
 
-| Route                | Method | Description              |
-|----------------------|--------|--------------------------|
-| `/api/auth/register` | POST   | Registers a new user      |
-| `/api/auth/login`    | POST   | Authenticates a user      |
-| `/api/auth/logout`   | POST   | Logs out a user           |
+| Route                         | Method | Description                                     |
+|-------------------------------|--------|-------------------------------------------------|
+| `/api/auth/register`          | POST   | Registers a new user                            |
+| `/api/auth/login`             | POST   | Authenticates a user                            |
+| `/api/auth/forgotPassword`    | POST   | Sends a reset link via registered email         |
+| `/api/auth/resetPassword`     | POST   | Resets a user password                          |
 
 ### Notes Management
 
@@ -298,24 +297,48 @@ The database schema uses MySQL as the relational database. Tables include:
 - **Categories**: Stores user-defined categories like reminders, archive, and trash.
 
 ```sql
-CREATE TABLE Users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100),
-  email VARCHAR(100) UNIQUE,
-  password VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `reset_token` varchar(255) DEFAULT NULL,
+  `reset_token_expires` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 
-CREATE TABLE Notes (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT,
-  title VARCHAR(255),
-  content TEXT,
-  category VARCHAR(100),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES Users(id)
-);
+CREATE TABLE `notes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `background_color` varchar(20) DEFAULT NULL,
+  `tags` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `pinned` tinyint(1) DEFAULT '0',
+  `archived` tinyint(1) DEFAULT '0',
+  `reminder` datetime DEFAULT NULL,
+  `trash` tinyint(1) DEFAULT '0',
+  `category_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `category_id` (`category_id`),
+  CONSTRAINT `notes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `notes_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+CREATE TABLE `categories` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `user_id` int NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`),
+  KEY `fk_user_id` (`user_id`),
+  CONSTRAINT `fk_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 ```
 
 ---
@@ -331,7 +354,7 @@ Here's an overview of the project folder structure:
 │   ├── /controllers  # Contains all controller logic
 │   ├── /models       # MySQL tables
 │   ├── /routes       # API routes for authentication, notes, and categories
-│   └── /utils        # Utility functions like JWT and password hashing
+│   └── /middleware   # For authentication and authorization validation
 │
 ├── /frontend         # Frontend Next.js code
 │   ├── /components   # Reusable React components
