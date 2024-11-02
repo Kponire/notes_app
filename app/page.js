@@ -3,9 +3,17 @@ import { Button, Container, Grid, Title, Text, Group, Box } from '@mantine/core'
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from '../styles/Index.module.css';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
-  const token = localStorage.getItem('token');
+
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    setToken(storedToken);
+  }, []);
+
   return (
     <div className={styles.containerBody}>
     <div className={styles.container}>

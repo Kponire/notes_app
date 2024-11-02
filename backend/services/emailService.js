@@ -2,17 +2,17 @@ const nodemailer = require('nodemailer');
 
 const sendResetEmail = async (to, resetUrl) => {
   const transporter = nodemailer.createTransport({
-    host: "sandbox.smtp.mailtrap.io",
-    port: 587,
+    host: process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io",
+    port: process.env.SMTP_PORT || 587,
     secure: false,
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
     },
   });
 
   const mailOptions = {
-    from: `"NoteMaster" <${process.env.EMAIL_USER}>`,
+    from: `"NoteMaster" <${process.env.SMTP_USER}>`,
     to,
     subject: 'Password Reset - NoteMaster',
     html: `
@@ -56,13 +56,13 @@ const sendReminderEmail = async (to, noteTitle, content) => {
     port: 587,
     secure: false,
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
     },
   });
 
   const mailOptions = {
-    from: `"NoteMaster" <${process.env.EMAIL_USER}>`,
+    from: `"NoteMaster" <${process.env.SMTP_USER}>`,
     to,
     subject: `Reminder: ${noteTitle} - NoteMaster`,
     html: `

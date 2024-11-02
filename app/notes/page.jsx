@@ -10,7 +10,7 @@ import styles from '@/styles/Notes.module.css';
 import axios from 'axios';
 import Sidebar from '@/components/Sidebar';
 import CategoryList from '@/components/CategoryList';
-import { DateTimePicker } from '@mantine/dates';
+import { DatesProvider, DateTimePicker } from '@mantine/dates';
 
 const NotesPage = () => {
   const [notes, setNotes] = useState([]);
@@ -34,12 +34,10 @@ const NotesPage = () => {
       let selectedCategory;
       categories.forEach((category) => {
         if (category.name === activeTab) {
-          //console.log('yeee');
           selectedCategory = category.id;
         }
       });
       let endpoint = activeCategory === 'Notes' && activeTab === 'All' ? '/notes' : `/notes?category=${selectedCategory}`
-      //console.log(endpoint);
       if (activeCategory === 'Reminders') {
         if (activeTab === 'All') endpoint = '/reminders';
         else `/reminders?category=${selectedCategory}`;
@@ -99,11 +97,11 @@ const NotesPage = () => {
     } else if (activeCategory === 'Notes') {
       filtered = notesData.filter(note => {
         const reminderDate = new Date(note.reminder); 
-        return note.trash === 0 && note.archived === 0 && reminderDate <= new Date();
+        //return note.trash === 0 && note.archived === 0 && reminderDate <= new Date();
+        return note.trash === 0 && note.archived === 0;
       });
     }
     filtered = filtered.sort((a, b) => b.pinned - a.pinned);
-    //console.log(activeCategory, filtered);
     setNotes(filtered);
     setFilteredNotes(filtered);
   };
@@ -168,7 +166,6 @@ const NotesPage = () => {
 
   // Pin or unpin a note
   const handlePinNote = async (id, isPinned) => {
-    //console.log('good to go');
     const token = localStorage.getItem('token');
     await axios.put(`http://localhost:5000/api/pinned/${id}`, { is_pinned: isPinned }, {
       headers: {
@@ -206,24 +203,14 @@ const NotesPage = () => {
       },
     });
     setIsReminderOpened(false);
-    setNotes(notes.map((note) => (note.id === id ? { ...note, is_reminder_set: isReminderSet } : note)));
+    setNotes(notes.map((note) => (note.id === id ? { ...note, is_reminder_set: reminderDateVal } : note)));
+    setUpdate(!update);
   };
 
 
   return (
     <>
     <Box className={styles.notesContainer}>
-     {/*  <div className={styles.header}>
-        <Text className={styles.title}>Your Notes</Text>
-        <SearchBar value={searchQuery} onChange={setSearchQuery} />
-        <AddNoteModal onSubmit={handleAddNote} />
-      </div>
-
-      <NoteTabs
-        categories={categories}
-        activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
-      /> */}
       <Sidebar activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
       {activeCategory === "Category" ? (
           <CategoryList />
@@ -270,6 +257,7 @@ const NotesPage = () => {
               categories={categories}
             />
             <Modal opened={isReminderOpened} onClose={() => setIsReminderOpened(false)} title="Authentication">
+            <DatesProvider settings={{ timezone: 'UTC' }}>              
               <DateTimePicker
                 clearable
                 minDate={new Date()}
@@ -280,6 +268,7 @@ const NotesPage = () => {
                 label="Pick date and time"
                 placeholder="Pick date and time"
               />
+            </DatesProvider>
               <Button bg={'teal'} my={'md'} onClick={handleReminderNote} fullWidth>
                 Set Reminder
               </Button>
