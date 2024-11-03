@@ -1,45 +1,78 @@
 "use client";
 import { useState, useEffect } from "react";
-import { FaLightbulb, FaBell, FaEdit, FaArchive, FaTrash, FaSignOutAlt } from "react-icons/fa";
+import { FaLightbulb, FaBell, FaEdit, FaArchive, FaTrash, FaSignOutAlt, FaBars, FaTimes } from "react-icons/fa";
 import styles from "@/styles/Sidebar.module.css";
 import { useRouter } from "next/navigation";
 import { Text, Button, Box } from "@mantine/core";
 import axios from "axios";
+import { showNotification } from "@mantine/notifications";
 
 const Sidebar = ({ activeCategory, setActiveCategory }) => {
   const [user, setUser] = useState({ username: "", email: "" });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
 
-  // Fetch user data from backend (you can adjust the endpoint as necessary)
   useEffect(() => {
-    console.log('lalaa');
     const fetchUser = async () => {
       const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
       try {
         const response = await axios.get("http://localhost:5000/api/auth/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log(response.data);
         setUser(response.data);
       } catch (error) {
         console.error("Error fetching user data:", error);
+        if (error.response && error.response.status === 401) {
+          showNotification({
+            title: "Session Expired",
+            message: "Please log in again.",
+            color: "red",
+          });
+          localStorage.removeItem("token");
+          router.push("/login");
+        } else {
+          showNotification({
+            title: "Error",
+            message: "Failed to fetch user data.",
+            color: "red",
+          });
+        }
       }
     };
     fetchUser();
   }, [activeCategory]);
 
-  // Handle sign out
   const handleSignOut = () => {
     localStorage.removeItem("token");
-    router.push("/"); // Redirect to the home/index page
+    router.push("/");
   };
 
   const handleNavigation = (category) => {
     setActiveCategory(category);
+    setIsSidebarOpen(false);
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev);
   };
 
   return (
-    <div className={styles.sidebar}>
+    <>
+    {/* Mobile toggle button */}
+    <button className={styles.mobileToggle} onClick={toggleSidebar}>
+        {isSidebarOpen ? <FaTimes /> : <FaBars />}
+    </button>
+    {/* Sidebar content */}
+    <div className={`${styles.sidebar} ${isSidebarOpen ? styles.open : ""}`}>
+      <div
+          className={styles.sidebarContent}
+          onClick={(e) => e.stopPropagation()}
+      >
+      <Box>  
       <Text className={styles.notemaster}> NoteMaster </Text>
       <ul>
         <li 
@@ -73,6 +106,7 @@ const Sidebar = ({ activeCategory, setActiveCategory }) => {
           <FaTrash /> Trash
         </li>
       </ul>
+      </Box>
 
       {/* User info and sign-out at the bottom */}
       <Box className={styles.userSection}>
@@ -92,7 +126,9 @@ const Sidebar = ({ activeCategory, setActiveCategory }) => {
           Sign Out
         </Button>
       </Box>
+     </div> 
     </div>
+    </>
   );
 };
 
