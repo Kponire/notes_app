@@ -1,70 +1,115 @@
+/* General Sidebar styles */
 .sidebar {
-    width: 240px;
-    background-color: #f9f9f9;
-    height: 100vh;
-    padding: 1rem 0;
-    border-right: 0.1px solid gray;
+  width: 240px;
+  background-color: #f9f9f9;
+  height: 100vh;
+  padding: 1rem 0;
+  border-right: 0.1px solid gray;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}
+
+/* Sidebar open state for mobile */
+.sidebar.open {
+  transform: translateX(0);
+}
+
+/* Sidebar hidden state for mobile */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: 80%;
+    max-width: 300px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   }
 
-  .notemaster {
-    padding: 0 calc(1rem + 10px);
-    padding-bottom: 7px;
-    font-weight: 600;
-    font-size: 20px;
-    color: teal;
+  .sidebar.open {
+    transform: translateX(0);
   }
-  
-  .sidebar ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .sidebar li {
-    display: flex;
-    align-items: center;
-    padding: 10px 0;
-    padding-left: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    color: teal;
-  }
-  
-  .sidebar li svg {
-    margin-right: 10px;
-  }
-  
-  .sidebar li.active {
-    background-color: teal;
-    color: white;
-  }
+}
 
-  .userSection {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 228px;
-    margin-top: auto;
-    padding: 1rem;
-    border-top: 1px solid #eaeaea;
-    text-align: center;
-  }
-  
-  .signOutButton {
-    margin-top: 0.5rem;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    color: teal;
-    transition: ease-in-out;
-    transition-delay: 2ms;
-  }
+.sidebarContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
 
-  .signOutButton:hover {
-    background-color: teal;
-    color: white;
+.notemaster {
+  padding: 0 calc(1rem + 10px);
+  padding-bottom: 10px;
+  font-weight: 600;
+  font-size: 20px;
+  color: teal;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.sidebar li {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  padding-left: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  color: teal;
+}
+
+.sidebar li svg {
+  margin-right: 10px;
+}
+
+.sidebar li.active {
+  background-color: teal;
+  color: white;
+}
+
+.userSection {
+  padding: 1rem;
+  border-top: 1px solid #eaeaea;
+  text-align: center;
+}
+
+.signOutButton {
+  margin-top: 0.5rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  color: teal;
+  transition: ease-in-out;
+  transition-delay: 2ms;
+}
+
+.signOutButton:hover {
+  background-color: teal;
+  color: white;
+}
+
+/* Mobile toggle button */
+.mobileToggle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 110;
+  background: transparent;
+  border: none;
+  color: #008080;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobileToggle {
+    display: block;
   }
-  
-  /* .sidebar li:hover {
-    background-color: #f1f1f1;
-  } */
-  
+}
