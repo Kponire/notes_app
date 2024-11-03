@@ -1,286 +1,485 @@
-"use client"
-import { useState, useEffect } from 'react';
-import { Text, Loader, Box, Modal, TextInput, Button } from '@mantine/core';
-import NoteList from '@/components/NoteList';
-import SearchBar from '@/components/SearchBar';
-import AddNoteModal from '@/components/AddNoteModal';
-import NoteTabs from '@/components/NoteTabs';
-import NoNotesImage from '@/components/NoNotesImage';
-import styles from '@/styles/Notes.module.css';
-import axios from 'axios';
-import Sidebar from '@/components/Sidebar';
-import CategoryList from '@/components/CategoryList';
-import { DatesProvider, DateTimePicker } from '@mantine/dates';
+"use client";
+import { useState, useEffect } from "react";
+import {
+  Text,
+  Loader,
+  Box,
+  Modal,
+  TextInput,
+  Button,
+} from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
+import NoteList from "@/components/NoteList";
+import SearchBar from "@/components/SearchBar";
+import AddNoteModal from "@/components/AddNoteModal";
+import NoteTabs from "@/components/NoteTabs";
+import NoNotesImage from "@/components/NoNotesImage";
+import styles from "@/styles/Notes.module.css";
+import Sidebar from "@/components/Sidebar";
+import CategoryList from "@/components/CategoryList";
+import { DatesProvider, DateTimePicker } from "@mantine/dates";
+import { useRouter } from "next/navigation";
+import axiosInstance from "@/axiosConfig";
 
 const NotesPage = () => {
   const [notes, setNotes] = useState([]);
   const [filteredNotes, setFilteredNotes] = useState([]);
-  const [loading, setLoading] = useState(true); //true
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categories, setCategories] = useState([{ id: null, name: 'All' }]);
-  const [activeCategory, setActiveCategory] = useState('Notes');
-  const [activeTab, setActiveTab] = useState('All');
-  const [newCategoryName, setNewCategoryName] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categories, setCategories] = useState([{ id: null, name: "All" }]);
+  const [activeCategory, setActiveCategory] = useState("Notes");
+  const [activeTab, setActiveTab] = useState("All");
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [update, setUpdate] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isReminderOpened, setIsReminderOpened] = useState(false);
   const [reminderDateVal, setReminderDateVal] = useState(new Date());
   const [idRem, setIdRem] = useState(null);
+  const router = useRouter();
 
+  // Fetch notes and categories
   useEffect(() => {
-    const fetchNotes = async () => {
-      const token = localStorage.getItem('token');
-      //let endpoint = '/notes';
-      let selectedCategory;
-      categories.forEach((category) => {
-        if (category.name === activeTab) {
-          selectedCategory = category.id;
-        }
-      });
-      let endpoint = activeCategory === 'Notes' && activeTab === 'All' ? '/notes' : `/notes?category=${selectedCategory}`
-      if (activeCategory === 'Reminders') {
-        if (activeTab === 'All') endpoint = '/reminders';
-        else `/reminders?category=${selectedCategory}`;
-      } else if (activeCategory === 'Archive') {
-        if (activeTab === 'All') endpoint = '/archive';
-        else `/archive?category=${selectedCategory}`;
-      } else if (activeCategory === 'Trash') {
-        if (activeTab === 'All') endpoint = '/trash';
-        else `/trash?category=${selectedCategory}`;
+    const fetchData = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
       }
-      const response = await axios.get(`http://localhost:5000/api${endpoint}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log(response.data);
-      filterNotes(response.data);
-      setLoading(false);
-      //setFilteredNotes(response.data);
+
+      try {
+        setLoading(true);
+        await fetchNotes(token);
+        await fetchCategories(token);
+      } catch (error) {
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchNotes();
-    fetchCategories();
-    console.log(update);
+    fetchData();
   }, [activeCategory, activeTab, update]);
 
+  // Filter notes based on search query
   useEffect(() => {
-    // Filter notes based on search query
-    let filtered = notes?.filter((note) =>
-      note?.title?.toLowerCase()?.includes(searchQuery?.toLowerCase())
+    const filtered = notes.filter((note) =>
+      note.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredNotes(filtered);
   }, [searchQuery]);
 
-  const fetchCategories = async () => {
-    const token = localStorage.getItem('token');
-    const { data } = await axios.get('http://localhost:5000/api/categories', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    setCategories([{ id: null, name: 'All' }, ...data]);
-    //console.log(categories);
+  // Fetch Notes
+  const fetchNotes = async (token) => {
+    try {
+      let selectedCategory = categories.find(
+        (category) => category.name === activeTab
+      )?.id;
+
+      let endpoint = "/notes";
+      if (activeCategory === "Notes" && activeTab !== "All") {
+        endpoint = `/notes?category=${selectedCategory}`;
+      } else if (activeCategory === "Reminders") {
+        endpoint =
+          activeTab === "All"
+            ? "/reminders"
+            : `/reminders?category=${selectedCategory}`;
+      } else if (activeCategory === "Archive") {
+        endpoint =
+          activeTab === "All"
+            ? "/archive"
+            : `/archive?category=${selectedCategory}`;
+      } else if (activeCategory === "Trash") {
+        endpoint =
+          activeTab === "All"
+            ? "/trash"
+            : `/trash?category=${selectedCategory}`;
+      }
+
+      const response = await axiosInstance.get(endpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      filterNotes(response.data);
+    } catch (error) {
+      handleAxiosError(error, "Failed to fetch notes.");
+    }
+  };
+
+  // Fetch Categories
+  const fetchCategories = async (token) => {
+    try {
+      const { data } = await axiosInstance.get("/categories");
+      setCategories([{ id: null, name: "All" }, ...data]);
+    } catch (error) {
+      handleAxiosError(error, "Failed to fetch categories.");
+    }
+  };
+
+  // Handle Axios Errors
+  const handleAxiosError = (error, defaultMessage) => {
+    if (error.response) {
+      if (error.response.status === 401) {
+        showNotification({
+          title: "Session Expired",
+          message: "Please log in again.",
+          color: "red",
+        });
+        localStorage.removeItem("token");
+        router.push("/login");
+      } else {
+        showNotification({
+          title: "Error",
+          message: error.response.data.message || defaultMessage,
+          color: "red",
+        });
+      }
+    } else {
+      showNotification({
+        title: "Error",
+        message: defaultMessage,
+        color: "red",
+      });
+    }
   };
 
   // Filtering notes based on category and pinned status
   const filterNotes = (notesData) => {
     let filtered = notesData;
-    console.log(notesData);
-    if (activeCategory === 'Reminders') {
-      filtered = notesData.filter(note => {
+
+    if (activeCategory === "Reminders") {
+      filtered = notesData.filter((note) => {
         const reminderDate = new Date(note.reminder);
         return reminderDate >= new Date();
       });
-    } else if (activeCategory === 'Archive') {
-      filtered = notesData.filter(note => note.archived === 1);
-    } else if (activeCategory === 'Trash') {
-      filtered = notesData.filter(note => note.trash === 1);
-    } else if (activeCategory === 'Notes') {
-      filtered = notesData.filter(note => {
-        const reminderDate = new Date(note.reminder); 
-        //return note.trash === 0 && note.archived === 0 && reminderDate <= new Date();
-        return note.trash === 0 && note.archived === 0;
-      });
+    } else if (activeCategory === "Archive") {
+      filtered = notesData.filter((note) => note.archived === 1);
+    } else if (activeCategory === "Trash") {
+      filtered = notesData.filter((note) => note.trash === 1);
+    } else if (activeCategory === "Notes") {
+      filtered = notesData.filter(
+        (note) => note.trash === 0 && note.archived === 0
+      );
     }
+
     filtered = filtered.sort((a, b) => b.pinned - a.pinned);
     setNotes(filtered);
     setFilteredNotes(filtered);
   };
 
+  // Handle Create Category
   const handleCreateCategory = async () => {
-    const token = localStorage.getItem('token');
-    await axios.post('http://localhost:5000/api/categories', { name: newCategoryName }, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    setModalOpen(false);
-    fetchCategories();
-    setUpdate(!update);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      await axiosInstance.post("/categories", { name: newCategoryName });
+      showNotification({
+        title: "Success",
+        message: "Category created successfully.",
+        color: "green",
+      });
+      setModalOpen(false);
+      setNewCategoryName("");
+      setUpdate(!update);
+    } catch (error) {
+      handleAxiosError(error, "Failed to create category.");
+    }
   };
 
   // Add a new note
   const handleAddNote = async (noteData) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.post('http://localhost:5000/api/notes', noteData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    setNotes([...notes, response.data]);
-    setUpdate(!update);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+    try {
+      const response = await axiosInstance.post("/notes", noteData);
+      showNotification({
+        title: "Success",
+        message: "Note added successfully.",
+        color: "green",
+      });
+      setNotes([response.data, ...notes]);
+      setUpdate(!update);
+    } catch (error) {
+      handleAxiosError(error, "Failed to add note.");
+    }
   };
 
   // Edit an existing note
   const handleEditNote = async (noteData) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.put(`http://localhost:5000/api/notes/${noteData.id}`, noteData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    setNotes(notes.map((note) => (note.id === noteData.id ? response.data : note)));
-    setUpdate(!update);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.put(`/notes/${noteData.id}`, noteData);
+      showNotification({
+        title: "Success",
+        message: "Note updated successfully.",
+        color: "green",
+      });
+      setNotes(
+        notes.map((note) => (note.id === noteData.id ? response.data : note))
+      );
+      setUpdate(!update);
+    } catch (error) {
+      handleAxiosError(error, "Failed to update note.");
+    }
   };
 
   // Delete a note
   const handleDeleteNote = async (id, isPermanentDelete, restore) => {
-    const token = localStorage.getItem('token');
-    if (isPermanentDelete) {      
-      await axios.delete(`http://localhost:5000/api/notes/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setNotes(notes.filter((note) => note.id !== id));
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      if (isPermanentDelete) {
+        await axiosInstance.delete(`/notes/${id}`);
+        showNotification({
+          title: "Deleted",
+          message: "Note permanently deleted.",
+          color: "green",
+        });
+        setNotes(notes.filter((note) => note.id !== id));
+      } else {
+        await axiosInstance.put(`/trash/${id}`, { is_trash: restore });
+        showNotification({
+          title: restore ? "Restored" : "Trashed",
+          message: restore
+            ? "Note restored successfully."
+            : "Note moved to trash.",
+          color: "green",
+        });
+        setNotes(
+          notes.map((note) =>
+            note.id === id
+              ? { ...note, trash: restore ? 0 : 1 }
+              : note
+          )
+        );
+      }
       setUpdate(!update);
-    } else {
-      await axios.put(`http://localhost:5000/api/trash/${id}`, { is_trash: restore }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setNotes(notes.map((note) => (note.id === id ? { ...note, trash: restore } : note)));
-      setUpdate(!update);
+    } catch (error) {
+      handleAxiosError(
+        error,
+        isPermanentDelete
+          ? "Failed to delete note."
+          : "Failed to move note to trash."
+      );
     }
   };
 
   // Pin or unpin a note
   const handlePinNote = async (id, isPinned) => {
-    const token = localStorage.getItem('token');
-    await axios.put(`http://localhost:5000/api/pinned/${id}`, { is_pinned: isPinned }, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    setNotes(notes.map((note) => (note.id === id ? { ...note, pinned: isPinned } : note)));
-    setUpdate(!update);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      await axiosInstance.put(`/pinned/${id}`, { is_pinned: isPinned });
+      showNotification({
+        title: isPinned ? "Pinned" : "Unpinned",
+        message: isPinned
+          ? "Note pinned successfully."
+          : "Note unpinned successfully.",
+        color: "green",
+      });
+      setNotes(
+        notes.map((note) =>
+          note.id === id ? { ...note, pinned: isPinned } : note
+        )
+      );
+      setUpdate(!update);
+    } catch (error) {
+      handleAxiosError(error, "Failed to update pin status.");
+    }
   };
 
   // Archive or unarchive a note
   const handleArchiveNote = async (id, isArchived) => {
-    const token = localStorage.getItem('token');
-    await axios.put(`http://localhost:5000/api/archive/${id}`, { is_archived: isArchived }, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    setNotes(notes.map((note) => (note.id === id ? { ...note, archived: isArchived } : note)));
-    setUpdate(!update);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      await axiosInstance.put(`/archive/${id}`, { is_archived: isArchived });
+      showNotification({
+        title: isArchived ? "Archived" : "Unarchived",
+        message: isArchived
+          ? "Note archived successfully."
+          : "Note unarchived successfully.",
+        color: "green",
+      });
+      setNotes(
+        notes.map((note) =>
+          note.id === id ? { ...note, archived: isArchived } : note
+        )
+      );
+      setUpdate(!update);
+    } catch (error) {
+      handleAxiosError(error, "Failed to update archive status.");
+    }
   };
 
   const handleReminderVal = (id) => {
     setIsReminderOpened(true);
     setIdRem(id);
-  }
+  };
 
   // Set or unset reminder for a note
   const handleReminderNote = async () => {
-    const token = localStorage.getItem('token');
-    const id = idRem;
-    await axios.put(`http://localhost:5000/api/reminders/${id}`, { is_reminder_set: reminderDateVal }, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    setIsReminderOpened(false);
-    setNotes(notes.map((note) => (note.id === id ? { ...note, is_reminder_set: reminderDateVal } : note)));
-    setUpdate(!update);
-  };
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
 
+    const id = idRem;
+    try {
+      await axiosInstance.put(`/reminders/${id}`, { is_reminder_set: reminderDateVal });
+      showNotification({
+        title: "Reminder Set",
+        message: "Reminder has been set successfully.",
+        color: "green",
+      });
+      setIsReminderOpened(false);
+      setNotes(
+        notes.map((note) =>
+          note.id === id
+            ? { ...note, is_reminder_set: reminderDateVal }
+            : note
+        )
+      );
+      setUpdate(!update);
+    } catch (error) {
+      handleAxiosError(error, "Failed to set reminder.");
+    }
+  };
 
   return (
     <>
-    <Box className={styles.notesContainer}>
-      <Sidebar activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
-      {activeCategory === "Category" ? (
-          <CategoryList />
-      ) : (
-        <>
-        <Box className={styles.box}>
-        <div className={styles.header}>
-          <Text className={styles.title}>Your Notes</Text>
-          <Box className={styles.headerRight}>
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
-          <AddNoteModal text={'Add Note'} onSubmit={handleAddNote} categories={categories} />
-          {/* Create Category Modal */}
-          <Button bg={'teal'} onClick={() => setModalOpen(true)} className={styles.addButton}>+ Add Category</Button>
-          <Modal opened={isModalOpen} onClose={() => setModalOpen(false)} title="Create New Category">
-            <TextInput
-              label="Category Name"
-              placeholder="Enter category name"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              mb={'10px'}
-            />
-            <Button bg={'teal'} onClick={handleCreateCategory} fullWidth>
-              Create
-            </Button>
-          </Modal>
-          </Box>
-        </div>
-        <NoteTabs
-          categories={categories}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
+      <Box className={styles.notesContainer}>
+        <Sidebar
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
         />
-        {loading ? (
-          <Loader className={styles.loader} />
-        ) : filteredNotes.length > 0 ? (
-          <>
-            <NoteList 
-              notes={filteredNotes} 
-              onEdit={handleEditNote} 
-              onDelete={handleDeleteNote}
-              onPin={handlePinNote}
-              onArchive={handleArchiveNote} 
-              onReminder={handleReminderVal}
-              categories={categories}
-            />
-            <Modal opened={isReminderOpened} onClose={() => setIsReminderOpened(false)} title="Authentication">
-            <DatesProvider settings={{ timezone: 'UTC' }}>              
-              <DateTimePicker
-                clearable
-                minDate={new Date()}
-                defaultValue={new Date()}
-                value={reminderDateVal}
-                onChange={setReminderDateVal}
-                valueFormat="DD MMM YYYY hh:mm A"
-                label="Pick date and time"
-                placeholder="Pick date and time"
-              />
-            </DatesProvider>
-              <Button bg={'teal'} my={'md'} onClick={handleReminderNote} fullWidth>
-                Set Reminder
-              </Button>
-            </Modal>
-          </>
-        ) : (
-          <NoNotesImage />
-        )}
+        <Box className={styles.content}>
+          {activeCategory === "Category" ? (
+            <CategoryList />
+          ) : (
+            <>
+              <Box className={styles.box}>
+                <div className={styles.header}>
+                  <Text className={styles.title}>Your Notes</Text>
+                  <Box className={styles.headerRight}>
+                    <SearchBar
+                      value={searchQuery}
+                      onChange={setSearchQuery}
+                    />
+                    <AddNoteModal
+                      text={"Add Note"}
+                      onSubmit={handleAddNote}
+                      categories={categories}
+                    />
+                    {/* Create Category Modal */}
+                    <Button
+                      bg="teal"
+                      onClick={() => setModalOpen(true)}
+                      className={styles.addButton}
+                    >
+                      + Add Category
+                    </Button>
+                    <Modal
+                      opened={isModalOpen}
+                      onClose={() => setModalOpen(false)}
+                      title="Create New Category"
+                      centered
+                    >
+                      <TextInput
+                        label="Category Name"
+                        placeholder="Enter category name"
+                        value={newCategoryName}
+                        onChange={(e) =>
+                          setNewCategoryName(e.target.value)
+                        }
+                        mb="10px"
+                      />
+                      <Button
+                        color="teal"
+                        onClick={handleCreateCategory}
+                        fullWidth
+                      >
+                        Create
+                      </Button>
+                    </Modal>
+                  </Box>
+                </div>
+                <NoteTabs
+                  categories={categories}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                />
+                {loading ? (
+                  <Loader className={styles.loader} />
+                ) : filteredNotes.length > 0 ? (
+                  <>
+                    <NoteList
+                      notes={filteredNotes}
+                      onEdit={handleEditNote}
+                      onDelete={handleDeleteNote}
+                      onPin={handlePinNote}
+                      onArchive={handleArchiveNote}
+                      onReminder={handleReminderVal}
+                      categories={categories}
+                    />
+                    <Modal
+                      opened={isReminderOpened}
+                      onClose={() => setIsReminderOpened(false)}
+                      title="Set Reminder"
+                      centered
+                    >
+                      <DatesProvider settings={{ timezone: "UTC" }}>
+                        <DateTimePicker
+                          clearable
+                          minDate={new Date()}
+                          value={reminderDateVal}
+                          onChange={setReminderDateVal}
+                          valueFormat="DD MMM YYYY hh:mm A"
+                          label="Pick date and time"
+                          placeholder="Pick date and time"
+                          mb="md"
+                        />
+                      </DatesProvider>
+                      <Button
+                        color="teal"
+                        onClick={handleReminderNote}
+                        fullWidth
+                      >
+                        Set Reminder
+                      </Button>
+                    </Modal>
+                  </>
+                ) : (
+                  <NoNotesImage />
+                )}
+              </Box>
+            </>
+          )}
         </Box>
-        </>
-      )}
-    </Box>
+      </Box>
     </>
   );
 };
