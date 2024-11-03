@@ -1,5 +1,5 @@
 "use client";
-import { Card, Text, Badge, Group, ActionIcon, Modal, Tooltip, Box, Divider, Menu, rem } from '@mantine/core';
+import { Card, Text, Badge, Group, ActionIcon, Modal, Tooltip, Box, Divider, Menu, rem, Grid } from '@mantine/core';
 import { FiEdit, FiTrash } from 'react-icons/fi';
 import { FaBell, FaArchive, FaThumbtack, FaTrashRestore } from 'react-icons/fa'; 
 import { MdDelete } from "react-icons/md";
@@ -43,10 +43,10 @@ const NoteList = ({ notes, onEdit, onDelete, onPin, onArchive, onReminder, categ
   }
 
   return (
-    <div className={styles.noteListContainer}>
+    <Grid mt={'10px'}>
       {notes.map((note) => (
+        <Grid.Col key={note.id} span={{ md: 4, lg: 3, sm: 6, xs: 12, }}>
         <Card
-          key={note.id}
           shadow="md"
           p="lg"
           style={{ backgroundColor: note.background_color || '#f5f5f5' }}
@@ -91,7 +91,7 @@ const NoteList = ({ notes, onEdit, onDelete, onPin, onArchive, onReminder, categ
             </Box>
           </Box>
           <Divider my={'15px'} />
-          <Text style={{ height: 'fit-contain', wordWrap: 'break-word'}} dangerouslySetInnerHTML={{ __html: note.content }} />
+          <Text style={{ marginBottom: '5px', height: 'fit-contain', wordWrap: 'break-word'}} dangerouslySetInnerHTML={{ __html: note.content }} />
           <Badge bg={'teal'}>{note.tags ? note.tags.split(',').join(', ') : 'No Tags'}</Badge>
 
           <Box className={styles.footer}>
@@ -128,12 +128,13 @@ const NoteList = ({ notes, onEdit, onDelete, onPin, onArchive, onReminder, categ
             </Box>
           </Box>
         </Card>
+        </Grid.Col>
       ))}
 
       <Modal opened={opened} onClose={() => setOpened(false)} title="Edit Note">
         <NoteForm note={noteToEdit} onSubmit={handleEditSubmit} categories={categories} text={"Update Note"} />
       </Modal>
-    </div>
+    </Grid>
   );
 };
 
