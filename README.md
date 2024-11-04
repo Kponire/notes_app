@@ -171,10 +171,10 @@ PORT=5000
 JWT_SECRET=your_jwt_secret_key
 
 # MySQL Database Configuration
-MYSQL_HOST=localhost
-MYSQL_USER=root
-MYSQL_PASSWORD=your_mysql_password
-MYSQL_DATABASE=notesapp
+DB_HOST=localhost
+DB_USER=root
+DB_PASS=your_mysql_password
+DB_NAME=notesapp
 
 # Email (Nodemailer) Configuration
 SMTP_HOST=smtp.gmail.com
