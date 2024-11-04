@@ -53,7 +53,7 @@ const NoteList = ({ notes, onEdit, onDelete, onPin, onArchive, onReminder, categ
           className={styles.noteCard}
         >
           <Box>
-            <Text size="xs" color="dimmed">
+            <Text mb='5px' size="xs" color="dimmed">
               Created: {format(new Date(note.created_at), 'PPpp')}
             </Text>
           </Box>
